@@ -17,7 +17,7 @@ const SCHEMA_DOC = `Each note becomes one JSON object with these keys:
     reference = a link, quote, fact, recommendation or "something I heard" worth keeping; journal = personal reflection/diary; other = anything else.
 - "title": clean, specific title, max 8 words, no trailing punctuation. Use the user's own title if one is given.
 - "tags": 0-5 short lowercase topical tags (single words or kebab-case). Always include the user's own tags if given. No type names as tags.
-- "items": array of strings. Split shopping lists / checklists into one entry per item (e.g. "milk", "2 kg rice"); for meeting notes list the action items; for a task with several sub-steps list them. Empty array otherwise.
+- "items": array of strings. Split shopping lists / checklists into one entry per item (e.g. "milk", "2 kg rice"); for meeting notes list the action items; for a task with several distinct sub-steps list them. For a single task, an idea, a reference or a journal entry, items MUST be an empty array (never repeat the title as an item).
 - "due": the deadline or reminder date as local time "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm" (24h), only if the note states or clearly implies one ("tomorrow", "by Friday", "at 6pm"). Resolve relative dates against the current date given. null if none.
 - "context": ONE short sentence (max 20 words) on why the user probably saved this / what it is for. Do not just repeat the title.
 Rules: respond with JSON only. Never invent facts, dates or items that are not in the note. Keep the user's language for title/items/context.`;
