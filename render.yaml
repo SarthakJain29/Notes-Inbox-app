@@ -1,0 +1,26 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec).
+# NOTE: Render's free web service has an EPHEMERAL disk — the SQLite file is wiped on every deploy/restart.
+# See developer.md ("Hosting") for persistence options before relying on this for real notes.
+services:
+  - type: web
+    name: notes-inbox
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: BOT_MODE
+        value: webhook
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ALLOWED_TELEGRAM_USER_ID
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false # https://<your-service>.onrender.com
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TIMEZONE
+        value: UTC
