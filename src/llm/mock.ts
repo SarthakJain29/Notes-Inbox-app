@@ -53,6 +53,7 @@ const DIMS = 1024;
 export class HashEmbedder implements EmbeddingProvider {
   readonly model = `mock-hash-${DIMS}`;
   readonly isMock = true;
+  readonly search = { minScore: 0.2, margin: 0.2, minLift: 0 };
   async embed(texts: string[], _kind: EmbedKind): Promise<number[][]> {
     return texts.map((t) => {
       const v = new Array<number>(DIMS).fill(0);

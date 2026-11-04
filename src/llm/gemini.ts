@@ -50,6 +50,8 @@ export class GeminiLLM implements LLMProvider {
 
 export class GeminiEmbedder implements EmbeddingProvider {
   readonly isMock = false;
+  // Calibrated on gemini-embedding-001 (768d): relevant ≈ 0.68–0.75, unrelated noise ≈ 0.48–0.61.
+  readonly search = { minScore: 0.55, margin: 0.04, minLift: 0.04 };
   readonly model: string;
   private readonly dims: number;
   constructor(private readonly o: GeminiOptions) {

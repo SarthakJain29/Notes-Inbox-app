@@ -18,10 +18,21 @@ export interface LLMProvider {
 
 export type EmbedKind = 'document' | 'query';
 
+export interface SearchProfile {
+  /** Cosine similarity below which a note is considered unrelated (the model's noise floor). */
+  minScore: number;
+  /** Keep only hits within this distance of the best one. */
+  margin: number;
+  /** The best hit must beat the median similarity by this much, otherwise nothing really stands out. */
+  minLift: number;
+}
+
 export interface EmbeddingProvider {
   /** Identifies the vector space. Vectors are only comparable when this matches. */
   readonly model: string;
   readonly isMock: boolean;
+  /** Calibrated per model; see developer.md "Search tuning". */
+  readonly search: SearchProfile;
   embed(texts: string[], kind: EmbedKind): Promise<number[][]>;
 }
 

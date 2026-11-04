@@ -168,3 +168,41 @@ describe('listing', () => {
     expect(NOW.hour).toBe(10);
   });
 });
+
+describe('search thresholds (calibrated embedder profile)', () => {
+  // Deterministic 2-d "embeddings": the text decides the angle, so cosine scores are predictable.
+  const angles: Record<string, number> = { ramen: 0, dentist: 70, passport: 75, flights: 80 };
+  const vec = (text: string) => {
+    const key = Object.keys(angles).find((k) => text.toLowerCase().includes(k));
+    const a = ((key ? angles[key]! : 90) * Math.PI) / 180;
+    return [Math.cos(a), Math.sin(a)];
+  };
+  const embedder = {
+    model: 'fake-2d',
+    isMock: false,
+    search: { minScore: 0.5, margin: 0.1, minLift: 0.05 },
+    async embed(texts: string[]) {
+      // The query is "ramen-like" (angle 0) unless it mentions another key.
+      return texts.map((t) => (t.startsWith('Q:') ? vec(t.slice(2) || 'ramen') : vec(t)));
+    },
+  };
+
+  async function build() {
+    const { service, store, classifier } = makeApp();
+    const { NotesService } = await import('../src/core/service.js');
+    const svc = new NotesService({ store, classifier, embedder, timezone: ZONE, now: () => NOW });
+    for (const t of ['ramen place on 5th', 'dentist appointment', 'passport renewal', 'flights to Berlin']) await svc.capture(USER, t);
+    return { svc, service };
+  }
+
+  it('returns only hits above the noise floor and near the best score', async () => {
+    const { svc } = await build();
+    const hits = await svc.search(USER, 'Q:ramen');
+    expect(hits.map((h) => h.note.title)).toEqual(['Ramen place on 5th']);
+  });
+
+  it('returns nothing when no single note stands out (all similarly close)', async () => {
+    const { svc } = await build();
+    expect(await svc.search(USER, 'Q:zzz')).toEqual([]);
+  });
+});

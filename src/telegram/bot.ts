@@ -109,7 +109,7 @@ export function createTelegramBot(o: TelegramOptions): Bot {
       await ctx.reply("🎙 Sorry, I couldn't transcribe that voice note. Please try again or send text.");
       return;
     }
-    if (!text.trim()) {
+    if (!/[\p{L}\p{N}]/u.test(text)) {
       await ctx.reply("🎙 I couldn't make out any words in that voice note.");
       return;
     }

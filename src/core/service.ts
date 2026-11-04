@@ -191,19 +191,25 @@ export class NotesService {
       this.log(`query embedding failed, keyword search only: ${(err as Error).message}`);
     }
 
-    const scored: SearchHit[] = [];
+    const { minScore, margin, minLift } = this.embedder.search;
+    const candidates: { note: Note; cos: number; kw: number; score: number }[] = [];
     for (const note of all) {
       const hay = new Set(tokenize(embeddingText(note)));
       const kw = qTokens.length ? qTokens.filter((t) => hay.has(t)).length / qTokens.length : 0;
       const vec = vectors.get(note.id);
       const cos = qv && vec ? cosine(qv, vec) : 0;
-      const score = cos + 0.3 * kw;
-      const minCos = this.embedder.isMock ? 0.2 : 0.5;
-      if (kw > 0 || cos >= minCos) scored.push({ note, score });
+      candidates.push({ note, cos, kw, score: cos + 0.3 * kw });
     }
+
+    // Semantic similarity needs to clear the model's noise floor AND stand out from the pack; strong keyword overlap always counts.
+    const cosines = candidates.map((c) => c.cos).filter((c) => c > 0).sort((a, b) => a - b);
+    const median = cosines.length ? cosines[Math.floor(cosines.length / 2)]! : 0;
+    const bestCos = cosines.length ? cosines[cosines.length - 1]! : 0;
+    const standsOut = bestCos - median >= minLift;
+    const scored = candidates.filter((c) => c.kw >= 0.5 || (c.cos >= minScore && standsOut) || (c.kw > 0 && c.cos >= minScore));
     scored.sort((a, b) => b.score - a.score);
     const best = scored[0]?.score ?? 0;
-    return scored.filter((h) => h.score >= best - 0.2).slice(0, k);
+    return scored.filter((h) => h.score >= best - margin).slice(0, k).map(({ note, score }) => ({ note, score }));
   }
 
   // ---------- mutations ----------

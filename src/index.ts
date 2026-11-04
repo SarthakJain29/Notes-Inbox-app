@@ -9,6 +9,9 @@ async function main() {
   const cfg = loadConfig();
   const tg = requireTelegramConfig(cfg);
   const log = (m: string) => console.log(`[notes-inbox] ${m}`);
+  if (cfg.BOT_MODE === 'webhook' && (!cfg.WEBHOOK_URL || !cfg.WEBHOOK_SECRET)) {
+    throw new Error('BOT_MODE=webhook requires WEBHOOK_URL and WEBHOOK_SECRET (see developer.md).');
+  }
   const app = createApp(cfg, { log });
   const bot = createTelegramBot({ ...tg, allowedUserId: tg.userId, app, log });
 
@@ -37,6 +40,11 @@ async function main() {
   await new Promise<void>((resolve) => server.listen(cfg.PORT, resolve));
   log(`HTTP listening on :${cfg.PORT} (mode=${cfg.BOT_MODE}, tz=${cfg.TIMEZONE}, digest at ${cfg.DIGEST_HOUR}:00)`);
 
+  try {
+    await bot.init(); // validates the token (getMe)
+  } catch (err) {
+    throw new Error(`Telegram rejected TELEGRAM_BOT_TOKEN (${(err as Error).message}). Re-copy it from @BotFather.`, { cause: err });
+  }
   await bot.api.setMyCommands(BOT_COMMANDS).catch((e) => log(`setMyCommands failed: ${e.message}`));
 
   const shutdown = async (sig: string) => {
@@ -51,11 +59,7 @@ async function main() {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
   if (cfg.BOT_MODE === 'webhook') {
-    if (!cfg.WEBHOOK_URL || !cfg.WEBHOOK_SECRET) {
-      throw new Error('BOT_MODE=webhook requires WEBHOOK_URL and WEBHOOK_SECRET (see developer.md).');
-    }
-    await bot.init();
-    await bot.api.setWebhook(`${cfg.WEBHOOK_URL.replace(/\/$/, '')}${webhookPath}`, { secret_token: cfg.WEBHOOK_SECRET, allowed_updates: ['message', 'callback_query'] });
+    await bot.api.setWebhook(`${cfg.WEBHOOK_URL!.replace(/\/$/, '')}${webhookPath}`, { secret_token: cfg.WEBHOOK_SECRET!, allowed_updates: ['message', 'callback_query'] });
     log('Webhook registered.');
     scheduler.start();
   } else {

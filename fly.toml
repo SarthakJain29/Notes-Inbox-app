@@ -1,0 +1,29 @@
+# Fly.io config. Create the volume first:  fly volumes create notes_data --size 1
+# Then:  fly launch --no-deploy --copy-config  &&  fly secrets set TELEGRAM_BOT_TOKEN=... ALLOWED_TELEGRAM_USER_ID=... GEMINI_API_KEY=... GROQ_API_KEY=...  &&  fly deploy
+app = "notes-inbox-CHANGE-ME"
+primary_region = "iad"
+
+[build]
+
+[env]
+  BOT_MODE = "polling"      # polling needs no public URL, and keeps the machine alive for the scheduler
+  DATABASE_PATH = "/data/notes.db"
+  PORT = "3000"
+  TIMEZONE = "UTC"
+
+[[mounts]]
+  source = "notes_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "off"   # the morning digest/reminders need the process running
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
