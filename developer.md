@@ -365,14 +365,14 @@ Made unattended; revisit freely.
 - [x] Reminders and morning digest scheduler
 - [x] Voice notes via Groq Whisper (adapter + provider; see blocker 3)
 - [x] Telegram adapter with strict single-user allowlist; polling + webhook modes; `/healthz`
-- [x] WhatsApp export parser + idempotent bulk importer CLI (iOS/Android, date-order detection)
+- [x] WhatsApp export parser + idempotent bulk importer CLI (iOS/Android, date-order detection); verified live against Gemini with the sample exports (original dates kept, bulk-embedded, re-run imports 0)
 - [x] CLI simulator running the same pipeline
 - [x] ~170 tests (classification parsing, capture parsing, heuristics, importer, store, service, scheduler, providers, Telegram adapter with fake Bot API)
 - [x] Dockerfile, `render.yaml`, `fly.toml`, GitHub Actions CI
 - [x] README with mockups + Mermaid architecture; this guide
 
 ### In progress
-- Nothing. Pull request open for review.
+- Nothing. Pull request `claude/v1` → `main` is open for review (not merged).
 
 ### Next (suggested)
 1. Run against real Telegram; fix whatever the first live session reveals (blockers 1, 3, 6).
