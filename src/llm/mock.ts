@@ -44,7 +44,7 @@ function fnv1a(s: string): number {
   return h >>> 0;
 }
 
-const DIMS = 256;
+const DIMS = 1024;
 
 /**
  * Offline "embedding": feature-hashed bag of (stemmed) words + bigrams.

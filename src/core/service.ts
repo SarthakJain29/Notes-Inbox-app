@@ -79,7 +79,7 @@ export class NotesService {
   }
 
   /** Store an already-classified note and embed it (embedding failures never lose the note). */
-  async persist(userId: string, rawText: string, c: ClassifyResult, opts: CaptureOptions & { importHash?: string; status?: 'open' | 'done' } = {}): Promise<Note> {
+  async persist(userId: string, rawText: string, c: ClassifyResult, opts: CaptureOptions & { importHash?: string; status?: 'open' | 'done'; deferEmbedding?: boolean } = {}): Promise<Note> {
     const due = parseLocalDue(c.due, this.timezone);
     const items: NoteItem[] = c.items.map((text) => ({ text, done: false }));
     const note = await this.store.insert({
@@ -98,7 +98,7 @@ export class NotesService {
       processedBy: c.processedBy,
       importHash: opts.importHash ?? null,
     });
-    await this.embedNote(note);
+    if (!opts.deferEmbedding) await this.embedNote(note);
     return note;
   }
 
@@ -198,7 +198,7 @@ export class NotesService {
       const vec = vectors.get(note.id);
       const cos = qv && vec ? cosine(qv, vec) : 0;
       const score = cos + 0.3 * kw;
-      const minCos = this.embedder.isMock ? 0.12 : 0.5;
+      const minCos = this.embedder.isMock ? 0.2 : 0.5;
       if (kw > 0 || cos >= minCos) scored.push({ note, score });
     }
     scored.sort((a, b) => b.score - a.score);

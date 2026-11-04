@@ -101,7 +101,7 @@ export function cleanItems(v: unknown, max = 50): string[] {
           : typeof (it as { name?: unknown })?.name === 'string'
             ? (it as { name: string }).name
             : '';
-    const t = text.replace(/\s+/g, ' ').trim().replace(/^[-*•\d.)\s]+/, '').slice(0, 200);
+    const t = text.replace(/\s+/g, ' ').trim().replace(/^(?:[-*•]\s*|\d+[.)]\s+)/, '').slice(0, 200);
     if (t) out.push(t);
     if (out.length >= max) break;
   }

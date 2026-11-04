@@ -101,14 +101,19 @@ export function splitListItems(text: string): string[] {
   let body = text.replace(/^(buy|get|pick up|grab|shopping( list)?|grocer(y|ies))\s*:?\s*/i, '');
   body = stripUrls(body);
   const lines = body.split('\n').map((l) => l.trim()).filter(Boolean);
-  const parts = lines.length > 1 ? lines : (lines[0] ?? '').split(/,|;|\band\b/i);
-  return cleanItems(parts.map((p) => p.trim()).filter((p) => p.length > 0 && p.length < 60));
+  // One item per line if there are several lines; always split on commas/semicolons; "and" only splits single-line lists.
+  const parts = lines.flatMap((line) => (lines.length > 1 ? line.split(/[,;]/) : line.split(/,|;|\band\b/i)));
+  return cleanItems(
+    parts
+      .map((p) => p.trim().replace(/^and\s+/i, ''))
+      .filter((p) => p.length > 0 && p.length < 60),
+  );
 }
 
 /** Offline classifier: used in mock mode and as a fallback when the LLM call fails. */
 export function heuristicClassify(input: PromptInput, now: DateTime): Classification {
   const text = input.content;
-  const type = guessType(text, input.typeHint);
+  const type = guessType(input.userTitle ? `${input.userTitle}\n${text}` : text, input.typeHint);
   const urls = text.match(URL_RE) ?? [];
   URL_RE.lastIndex = 0;
 
