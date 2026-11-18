@@ -1,0 +1,41 @@
+{
+  "name": "notes-inbox",
+  "version": "0.1.0",
+  "description": "A personal Telegram bot that turns dumped notes into structured, searchable memory.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "simulate": "tsx src/cli/simulate.ts",
+    "import:whatsapp": "tsx src/cli/import-whatsapp.ts",
+    "export": "tsx src/cli/export.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.9",
+    "grammy": "^1.46.0",
+    "luxon": "^3.7.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/luxon": "^3.7.6",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
+  }
+}
